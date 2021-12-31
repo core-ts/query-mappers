@@ -1,10 +1,15 @@
 import { Template, TemplateNode, TemplateType } from './core';
 
+const regexp = new RegExp(' >= ', 'gi');
+const regexp2 = new RegExp(' <= ', 'gi');
+const regexp3 = new RegExp(' > ', 'gi');
+const regexp4 = new RegExp(' < ', 'gi');
+const regexp5 = new RegExp('\r\n', 'gi');
+const regexp6 = new RegExp('\r', 'gi');
+const regexp7 = new RegExp('\n', 'gi');
+const regexp8 = new RegExp('    ', 'gi');
+const regexp9 = new RegExp('  ', 'gi');
 export function correctXml(stream: string): string {
-  const regexp = new RegExp(' >= ', 'gi');
-  const regexp2 = new RegExp(' <= ', 'gi');
-  const regexp3 = new RegExp(' > ', 'gi');
-  const regexp4 = new RegExp(' < ', 'gi');
   let text = stream;
   if (text.indexOf(' >= ') >= 0) {
     text = text.replace(regexp, ' &gt;= ');
@@ -17,6 +22,37 @@ export function correctXml(stream: string): string {
   }
   if (text.indexOf(' < ') >= 0) {
     text = text.replace(regexp4, ' &lt; ');
+  }
+  return text;
+}
+export function trim(stream: string): string {
+  let text = stream;
+  if (text.indexOf(' >= ') >= 0) {
+    text = text.replace(regexp, ' &gt;= ');
+  }
+  if (text.indexOf(' <= ') >= 0) {
+    text = text.replace(regexp2, ' &lt;= ');
+  }
+  if (text.indexOf(' > ') >= 0) {
+    text = text.replace(regexp3, ' &gt; ');
+  }
+  if (text.indexOf(' < ') >= 0) {
+    text = text.replace(regexp4, ' &lt; ');
+  }
+  if (text.indexOf('\r\n') >= 0) {
+    text = text.replace(regexp5, '');
+  }
+  if (text.indexOf('\r') >= 0) {
+    text = text.replace(regexp6, '');
+  }
+  if (text.indexOf('\n') >= 0) {
+    text = text.replace(regexp7, '');
+  }
+  while (text.indexOf('    ') >= 0) {
+    text = text.replace(regexp8, ' ');
+  }
+  while (text.indexOf('  ') >= 0) {
+    text = text.replace(regexp9, ' ');
   }
   return text;
 }
@@ -67,31 +103,31 @@ export function buildIf(t: string): TemplateNode | undefined {
   let i = t.indexOf('!=');
   if (i > 0) {
     const s1 = t.substr(0, i).trim();
-    let s2 = t.substr(i + 2).trim();
+    const s2 = t.substr(i + 2).trim();
     if (s1.length > 0) {
       if (s2 === 'null') {
         return { type: 'isNotNull', text: '', property: s1, value: 'null' };
       } else {
-        return { type: 'isNotEqual', text: '', property: s1, value: trim(s2) };
+        return { type: 'isNotEqual', text: '', property: s1, value: trimQ(s2) };
       }
     }
   } else {
     i = t.indexOf('==');
     if (i > 0) {
       const s1 = t.substr(0, i).trim();
-      let s2 = t.substr(i + 2).trim();
+      const s2 = t.substr(i + 2).trim();
       if (s1.length > 0) {
         if (s2 === 'null') {
           return { type: 'isNull', text: '', property: s1, value: 'null' };
         } else {
-          return { type: 'isEqual', text: '', property: s1, value: trim(s2) };
+          return { type: 'isEqual', text: '', property: s1, value: trimQ(s2) };
         }
       }
     }
   }
   return undefined;
 }
-export function trim(s: string): string {
+export function trimQ(s: string): string {
   // tslint:disable-next-line:quotemark
   if (s.startsWith("'")) {
     s = s.substr(1);
