@@ -67,7 +67,7 @@ export function buildFilter<S>(filter: S, q?: string, useContain?: boolean, attr
               const attr: Attribute = attrs[key];
               if (attr) {
                 if (attr.match === 'prefix') {
-                  obj2[key] = '%' + v;
+                  obj2[key] = v + '%';
                 } else if (attr.match === 'equal') {
                   obj2[key] = v;
                 } else {

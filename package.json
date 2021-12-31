@@ -1,6 +1,6 @@
 {
   "name": "query-templates",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "query-templates",
   "main": "./lib/index.js",
   "types": "./src/index.ts",
