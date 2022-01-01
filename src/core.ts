@@ -247,7 +247,16 @@ export function buildSqlByTemplate(obj: any, template: Template, cacheFormats: M
     const format: StringFormat = getStringFormat(sub.text, cacheFormats);
     let s: TmpStatement;
     if (sub.type === TemplateType.text) {
-      results.push(sub.text);
+      s = build(format, obj, i, param);
+      i = s.i;
+      if (s && s.query && s.query.length > 0) {
+        results.push(s.query);
+        if (s.params && s.params.length > 0) {
+          for (const p of s.params) {
+            params.push(p);
+          }
+        }
+      }
     } else {
       s = build(format, obj, i, param);
       i = s.i;

@@ -1,7 +1,7 @@
 {
-  "name": "query-templates",
-  "version": "0.0.3",
-  "description": "query-templates",
+  "name": "query-mappers",
+  "version": "0.0.1",
+  "description": "query-mappers",
   "main": "./lib/index.js",
   "types": "./src/index.ts",
   "scripts": {
@@ -21,9 +21,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com/core-ts/query-templates"
+    "url": "git@github.com/core-ts/query-mappers"
   },
   "keywords": [
+    "query-mappers",
     "query-templates"
   ]
 }
