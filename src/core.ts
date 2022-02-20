@@ -101,7 +101,7 @@ export function buildFormat(str: string): StringFormat {
   const format: StringFormat = { texts, parameters };
   return format;
 }
-export function renderTemplateNodes(templateNodes: TemplateNode[], obj: any): TemplateNode[] {
+export function renderTemplateNodes(obj: any, templateNodes: TemplateNode[]): TemplateNode[] {
   const nodes: TemplateNode[] = [];
   for (const sub of templateNodes) {
     let attr: any;
@@ -240,7 +240,7 @@ export function getText(str: string, templates: Map<string, Template>): string {
 export function build(obj: any, template: Template, cacheFormats: Map<string, StringFormat>, param: (i: number) => string): Statement {
   const results: string[] = [];
   const templateNodes: TemplateNode[] = template.templates;
-  const renderNodes: TemplateNode[] = renderTemplateNodes(templateNodes, obj);
+  const renderNodes: TemplateNode[] = renderTemplateNodes(obj, templateNodes);
   let i = 1;
   const params = [];
   for (const sub of renderNodes) {
@@ -276,7 +276,7 @@ export function build(obj: any, template: Template, cacheFormats: Map<string, St
 export function mergeSqlByTemplate(obj: any, template: Template, cacheFormats: Map<string, StringFormat>): string {
   const results = [];
   const templateNodes: TemplateNode[] = template.templates;
-  const renderNodes: TemplateNode[] = renderTemplateNodes(templateNodes, obj);
+  const renderNodes: TemplateNode[] = renderTemplateNodes(obj, templateNodes);
   for (const sub of renderNodes) {
     const format: StringFormat = getStringFormat(sub.text, cacheFormats);
     let s: string;
