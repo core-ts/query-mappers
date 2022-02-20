@@ -169,7 +169,7 @@ export function mergeStringFormat(format: StringFormat, obj: any): string {
   }
   return results.join('');
 }
-export function build(format: StringFormat, obj: any, j: number, param: (i: number) => string): TmpStatement {
+export function merge(obj: any, format: StringFormat, param: (i: number) => string, j: number): TmpStatement {
   const results: string[] = [];
   const texts = format.texts;
   const parameters = format.parameters;
@@ -237,7 +237,7 @@ export function getText(str: string, templates: Map<string, Template>): string {
   return (!template ? '' : template.text);
 }
 // sql
-export function buildSqlByTemplate(obj: any, template: Template, cacheFormats: Map<string, StringFormat>, param: (i: number) => string): Statement {
+export function build(obj: any, template: Template, cacheFormats: Map<string, StringFormat>, param: (i: number) => string): Statement {
   const results: string[] = [];
   const templateNodes: TemplateNode[] = template.templates;
   const renderNodes: TemplateNode[] = renderTemplateNodes(templateNodes, obj);
@@ -247,7 +247,7 @@ export function buildSqlByTemplate(obj: any, template: Template, cacheFormats: M
     const format: StringFormat = getStringFormat(sub.text, cacheFormats);
     let s: TmpStatement;
     if (sub.type === TemplateType.text) {
-      s = build(format, obj, i, param);
+      s = merge(obj, format, param, i);
       i = s.i;
       if (s && s.query && s.query.length > 0) {
         results.push(s.query);
@@ -258,7 +258,7 @@ export function buildSqlByTemplate(obj: any, template: Template, cacheFormats: M
         }
       }
     } else {
-      s = build(format, obj, i, param);
+      s = merge(obj, format, param, i);
       i = s.i;
       if (s && s.query && s.query.length > 0) {
         results.push(s.query);

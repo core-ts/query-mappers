@@ -1,4 +1,4 @@
-import { buildSqlByTemplate, mergeSqlByTemplate, Statement, StringFormat, Template } from './core';
+import { build, mergeSqlByTemplate, Statement, StringFormat, Template } from './core';
 import { Attribute, StringMap } from './metadata';
 import { Build } from './search';
 
@@ -19,7 +19,7 @@ export class TemplateManager {
     return mergeSqlByTemplate(obj, template, this.cacheFormats);
   }
   build(template: Template, obj: any, param: (i: number) => string): Statement {
-    return buildSqlByTemplate(obj, template, this.cacheFormats, param);
+    return build(obj, template, this.cacheFormats, param);
   }
 }
 export interface DB {
@@ -58,7 +58,7 @@ export class Mapper {
   exec(key: string, obj: any, ctx?: any): Promise<number> {
     const t = this.templates.get(key);
     if (t) {
-      const s = buildSqlByTemplate(obj, t, this.cacheFormats, this.db.param);
+      const s = build(obj, t, this.cacheFormats, this.db.param);
       return this.db.exec(s.query, s.params, ctx);
     } else {
       return Promise.resolve(-1);
@@ -77,7 +77,7 @@ export class Mapper {
         if (!t) {
           return Promise.resolve(-2);
         } else {
-          const s = buildSqlByTemplate(obj, t, this.cacheFormats, this.db.param);
+          const s = build(obj, t, this.cacheFormats, this.db.param);
           ss.push(s);
         }
       }
@@ -87,7 +87,7 @@ export class Mapper {
   query<T>(key: string, obj: any, m?: StringMap, bools?: Attribute[], ctx?: any): Promise<T[]> {
     const t = this.templates.get(key);
     if (t) {
-      const s = buildSqlByTemplate(obj, t, this.cacheFormats, this.db.param);
+      const s = build(obj, t, this.cacheFormats, this.db.param);
       return this.db.query(s.query, s.params, m, bools, ctx);
     } else {
       return Promise.resolve([]);
@@ -96,7 +96,7 @@ export class Mapper {
   queryOne<T>(key: string, obj: any, m?: StringMap, bools?: Attribute[], ctx?: any): Promise<T|null> {
     const t = this.templates.get(key);
     if (t) {
-      const s = buildSqlByTemplate(obj, t, this.cacheFormats, this.db.param);
+      const s = build(obj, t, this.cacheFormats, this.db.param);
       return this.db.queryOne(s.query, s.params, m, bools, ctx);
     } else {
       return Promise.resolve(null);
@@ -105,7 +105,7 @@ export class Mapper {
   execScalar<T>(key: string, obj: any, ctx?: any): Promise<T> {
     const t = this.templates.get(key);
     if (t) {
-      const s = buildSqlByTemplate(obj, t, this.cacheFormats, this.db.param);
+      const s = build(obj, t, this.cacheFormats, this.db.param);
       return this.db.execScalar(s.query, s.params, ctx);
     } else {
       throw new Error('Cannot find template with key ' + key);
@@ -114,7 +114,7 @@ export class Mapper {
   count(key: string, obj: any, ctx?: any): Promise<number> {
     const t = this.templates.get(key);
     if (t) {
-      const s = buildSqlByTemplate(obj, t, this.cacheFormats, this.db.param);
+      const s = build(obj, t, this.cacheFormats, this.db.param);
       return this.db.count(s.query, s.params, ctx);
     } else {
       return Promise.resolve(-1);
