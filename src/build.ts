@@ -149,7 +149,10 @@ export function buildTemplateFromNodes(nodes: NodeListOf<ChildNode>): Template {
           if (s2) {
             const v = getString(child.firstChild);
             const format = buildFormat(v);
-            const sub: TemplateNode = { type: s2.type, text: v, property: s2.property, value: s2.value, format };
+            const prefix = child.getAttribute('prefix');
+            const suffix = child.getAttribute('suffix');
+            const array  = child.getAttribute('array');
+            const sub: TemplateNode = { type: s2.type, text: v, property: s2.property, value: s2.value, format, array, prefix, suffix };
             templates.push(sub);
             text = text + child.toString();
           }
@@ -157,6 +160,9 @@ export function buildTemplateFromNodes(nodes: NodeListOf<ChildNode>): Template {
       }
       if (isValidNode(child.nodeName)) {
         const property = child.getAttribute('property');
+        const prefix = child.getAttribute('prefix');
+        const suffix = child.getAttribute('suffix');
+        const array  = child.getAttribute('array');
         const encode = child.getAttribute('encode');
         let value = child.getAttribute('value');
         if (!value) {
@@ -165,7 +171,7 @@ export function buildTemplateFromNodes(nodes: NodeListOf<ChildNode>): Template {
         const type = child.nodeName;
         const subText = getString(child.firstChild);
         const format = buildFormat(subText);
-        const sub: TemplateNode = {property, encode, value, text: subText, type, format};
+        const sub: TemplateNode = {property, encode, value, text: subText, type, format, array, prefix, suffix};
         templates.push(sub);
         text = text + child.toString();
       }

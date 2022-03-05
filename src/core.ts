@@ -44,6 +44,9 @@ export interface TemplateNode {
   encode?: string | null;
   value: string | null;
   format: StringFormat;
+  array?: string | null;
+  suffix?: string | null;
+  prefix?: string | null;
 }
 
 export function buildFormat(str: string): StringFormat {
@@ -170,13 +173,32 @@ export function mergeStringFormat(format: StringFormat, obj: any): string {
   }
   return results.join('');
 }
-export function merge(obj: any, format: StringFormat, param: (i: number) => string, j: number, skipArray?: boolean): TmpStatement {
+export function merge(obj: any, format: StringFormat, param: (i: number) => string, j: number, skipArray?: boolean, array?: string|null, prefix?: string|null, suffix?: string|null): TmpStatement {
   const results: string[] = [];
-  const texts = format.texts;
   const parameters = format.parameters;
-  const length = parameters.length;
   let k = j;
   const params = [];
+  if (array && array.length > 0 && parameters.length === 1) {
+    const p = valueOf(obj, parameters[0].name);
+    if (Array.isArray(p) && p.length > 0) {
+      const strs: string[] = [];
+      console.log('le ' + array.length);
+      for (const sp of p) {
+        const ts = merge(obj, format, param, k, true);
+        strs.push(ts.query);
+        console.log('q:' + ts.query);
+        params.push(sp);
+        k = k + 1;
+        console.log('k:' + k);
+      }
+      results.push(strs.join(array));
+      const pf0 = (prefix && prefix.length > 0 ? prefix : '');
+      const sf0 = (suffix && suffix.length > 0 ? suffix : '');
+      return { query: pf0 + results.join('') + sf0, params, i: k };
+    }
+  }
+  const texts = format.texts;
+  const length = parameters.length;
   for (let i = 0; i < length; i++) {
     results.push(texts[i]);
     const p = valueOf(obj, parameters[i].name);
@@ -209,9 +231,12 @@ export function merge(obj: any, format: StringFormat, param: (i: number) => stri
     }
   }
   if (texts[length] && texts[length].length > 0) {
+    console.log('text l:' + texts[length]);
     results.push(texts[length]);
   }
-  return { query: results.join(''), params, i: k };
+  const pf = (prefix && prefix.length > 0 ? prefix : '');
+  const sf = (suffix && suffix.length > 0 ? suffix : '');
+  return { query: pf + results.join('') + sf, params, i: k };
 }
 export function isValidProperty(str: string): boolean {
   for (let i = 0; i < str.length; i++) {
@@ -254,7 +279,7 @@ export function build(obj: any, template: Template, param: (i: number) => string
     // const format: StringFormat = getStringFormat(sub.text, cacheFormats);
     let s: TmpStatement;
     if (sub.type === TemplateType.text) {
-      s = merge(obj, sub.format, param, i, skipArray);
+      s = merge(obj, sub.format, param, i, skipArray, sub.array, sub.prefix, sub.suffix);
       i = s.i;
       if (s && s.query && s.query.length > 0) {
         results.push(s.query);
@@ -265,7 +290,7 @@ export function build(obj: any, template: Template, param: (i: number) => string
         }
       }
     } else {
-      s = merge(obj, sub.format, param, i, skipArray);
+      s = merge(obj, sub.format, param, i, skipArray, sub.array, sub.prefix, sub.suffix);
       i = s.i;
       if (s && s.query && s.query.length > 0) {
         results.push(s.query);
