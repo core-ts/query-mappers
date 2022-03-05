@@ -1,14 +1,14 @@
 import { build, Statement, Template } from './core';
 import { Attribute, Attributes, StringMap } from './metadata';
 
-export type Build = (obj: any, template: Template, param: (i: number) => string, skipArray?: boolean) => Statement;
+export type Build = (obj: any, template: Template, param: (i: number) => string) => Statement;
 export type Query = <S>(filter: S, bparam: LikeType | ((i: number) => string), sn?: string, buildSort?: (sort?: string, map?: Attributes | StringMap) => string, attrs?: Attributes) => Statement | undefined;
 export type BuildFilter = <S>(filter: S, q?: string, useContain?: boolean, attrs?: Attributes) => S;
-export function useQuery(id?: string, mapper?: Map<string, Template>, attrs?: Attributes, useContain?: boolean, skipArray?: boolean, q?: string, sort?: string): Query | undefined {
+export function useQuery(id?: string, mapper?: Map<string, Template>, attrs?: Attributes, useContain?: boolean, q?: string, sort?: string): Query | undefined {
   if (id && mapper) {
     const template = mapper.get(id);
     if (template) {
-      const query = useQueryBuilder(template, attrs, useContain, skipArray, q, sort);
+      const query = useQueryBuilder(template, attrs, useContain, q, sort);
       return query.buildQuery;
     }
   }
@@ -18,11 +18,11 @@ export function buildDollarParam(i: number): string {
   return '$' + i;
 }
 export type LikeType = 'like' | 'ilike';
-export function useQueryBuilder<S>(template: Template, attributes?: Attributes, useContain?: boolean, skipArray?: boolean, q?: string, sort?: string): QueryBuilder<S> {
-  return new QueryBuilder<S>(template, useContain, undefined, attributes, q, sort, skipArray);
+export function useQueryBuilder<S>(template: Template, attributes?: Attributes, useContain?: boolean, q?: string, sort?: string): QueryBuilder<S> {
+  return new QueryBuilder<S>(template, useContain, undefined, attributes, q, sort);
 }
 export class QueryBuilder<S> {
-  constructor(public template: Template, public useContain?: boolean, bf?: BuildFilter, public attributes?: Attributes, q?: string, sort?: string, public skipArray?: boolean) {
+  constructor(public template: Template, public useContain?: boolean, bf?: BuildFilter, public attributes?: Attributes, q?: string, sort?: string) {
     this.sort = (sort ? sort : 'sort');
     this.q = (q ? q : 'q');
     this.buildFilter = bf ? bf : buildFilter;
@@ -43,7 +43,7 @@ export class QueryBuilder<S> {
     } else {
       param1 = bparam;
     }
-    return build(f2, this.template, param1, this.skipArray);
+    return build(f2, this.template, param1);
   }
 }
 export function buildFilter<S>(filter: S, q?: string, useContain?: boolean, attrs?: Attributes): S {

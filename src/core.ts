@@ -45,6 +45,7 @@ export interface TemplateNode {
   value: string | null;
   format: StringFormat;
   array?: string | null;
+  separator?: string | null;
   suffix?: string | null;
   prefix?: string | null;
 }
@@ -173,25 +174,22 @@ export function mergeStringFormat(format: StringFormat, obj: any): string {
   }
   return results.join('');
 }
-export function merge(obj: any, format: StringFormat, param: (i: number) => string, j: number, skipArray?: boolean, array?: string|null, prefix?: string|null, suffix?: string|null): TmpStatement {
+export function merge(obj: any, format: StringFormat, param: (i: number) => string, j: number, skipArray?: boolean, separator?: string|null, prefix?: string|null, suffix?: string|null): TmpStatement {
   const results: string[] = [];
   const parameters = format.parameters;
   let k = j;
   const params = [];
-  if (array && array.length > 0 && parameters.length === 1) {
+  if (separator && separator.length > 0 && parameters.length === 1) {
     const p = valueOf(obj, parameters[0].name);
     if (Array.isArray(p) && p.length > 0) {
       const strs: string[] = [];
-      console.log('le ' + array.length);
       for (const sp of p) {
         const ts = merge(obj, format, param, k, true);
         strs.push(ts.query);
-        console.log('q:' + ts.query);
         params.push(sp);
         k = k + 1;
-        console.log('k:' + k);
       }
-      results.push(strs.join(array));
+      results.push(strs.join(separator));
       const pf0 = (prefix && prefix.length > 0 ? prefix : '');
       const sf0 = (suffix && suffix.length > 0 ? suffix : '');
       return { query: pf0 + results.join('') + sf0, params, i: k };
@@ -231,7 +229,6 @@ export function merge(obj: any, format: StringFormat, param: (i: number) => stri
     }
   }
   if (texts[length] && texts[length].length > 0) {
-    console.log('text l:' + texts[length]);
     results.push(texts[length]);
   }
   const pf = (prefix && prefix.length > 0 ? prefix : '');
@@ -269,7 +266,7 @@ export function getText(str: string, templates: Map<string, Template>): string {
   return (!template ? '' : template.text);
 }
 // sql
-export function build(obj: any, template: Template, param: (i: number) => string, skipArray?: boolean): Statement {
+export function build(obj: any, template: Template, param: (i: number) => string): Statement {
   const results: string[] = [];
   const templateNodes: TemplateNode[] = template.templates;
   const renderNodes: TemplateNode[] = renderTemplateNodes(obj, templateNodes);
@@ -278,8 +275,9 @@ export function build(obj: any, template: Template, param: (i: number) => string
   for (const sub of renderNodes) {
     // const format: StringFormat = getStringFormat(sub.text, cacheFormats);
     let s: TmpStatement;
+    const skipArray = (sub.array === 'skip');
     if (sub.type === TemplateType.text) {
-      s = merge(obj, sub.format, param, i, skipArray, sub.array, sub.prefix, sub.suffix);
+      s = merge(obj, sub.format, param, i, skipArray, sub.separator, sub.prefix, sub.suffix);
       i = s.i;
       if (s && s.query && s.query.length > 0) {
         results.push(s.query);
@@ -290,7 +288,7 @@ export function build(obj: any, template: Template, param: (i: number) => string
         }
       }
     } else {
-      s = merge(obj, sub.format, param, i, skipArray, sub.array, sub.prefix, sub.suffix);
+      s = merge(obj, sub.format, param, i, skipArray, sub.separator, sub.prefix, sub.suffix);
       i = s.i;
       if (s && s.query && s.query.length > 0) {
         results.push(s.query);
