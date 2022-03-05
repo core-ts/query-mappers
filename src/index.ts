@@ -131,6 +131,7 @@ export class Mapper {
   }
 }
 export const TemplatesManager = Mapper;
+/*
 export function useTemplate(mapper?: Map<string, Template>): Build | undefined {
   if (!mapper) {
     return undefined;
@@ -139,3 +140,4 @@ export function useTemplate(mapper?: Map<string, Template>): Build | undefined {
   // return t.build;
   return build;
 }
+*/
