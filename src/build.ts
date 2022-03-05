@@ -1,14 +1,24 @@
-import { Template, TemplateNode, TemplateType } from './core';
+import { buildFormat, Template, TemplateNode, TemplateType } from './core';
 
 const regexp = new RegExp(' >= ', 'gi');
 const regexp2 = new RegExp(' <= ', 'gi');
 const regexp3 = new RegExp(' > ', 'gi');
 const regexp4 = new RegExp(' < ', 'gi');
-const regexp5 = new RegExp('\r\n', 'gi');
-const regexp6 = new RegExp('\r', 'gi');
-const regexp7 = new RegExp('\n', 'gi');
-const regexp8 = new RegExp('    ', 'gi');
-const regexp9 = new RegExp('  ', 'gi');
+const regexp5 = new RegExp(' && ', 'gi');
+const regexp6 = new RegExp(' ?& ', 'gi');
+const regexp7 = new RegExp(' -> ', 'gi');
+const regexp8 = new RegExp(' ->> ', 'gi');
+const regexp9 = new RegExp(' #> ', 'gi');
+const regexp10 = new RegExp(' #>> ', 'gi');
+const regexp11 = new RegExp(' @> ', 'gi');
+const regexp12 = new RegExp(' >@ ', 'gi');
+const regexp13 = new RegExp(' <@ ', 'gi');
+const regexp14 = new RegExp(' @< ', 'gi');
+const regexp30 = new RegExp('\r\n', 'gi');
+const regexp31 = new RegExp('\r', 'gi');
+const regexp32 = new RegExp('\n', 'gi');
+const regexp33 = new RegExp('    ', 'gi');
+const regexp34 = new RegExp('  ', 'gi');
 export function correctXml(stream: string): string {
   let text = stream;
   if (text.indexOf(' >= ') >= 0) {
@@ -22,6 +32,36 @@ export function correctXml(stream: string): string {
   }
   if (text.indexOf(' < ') >= 0) {
     text = text.replace(regexp4, ' &lt; ');
+  }
+  if (text.indexOf(' && ') >= 0) {
+    text = text.replace(regexp5, ' &amp;&amp; ');
+  }
+  if (text.indexOf(' ?& ') >= 0) {
+    text = text.replace(regexp6, ' ?&amp; ');
+  }
+  if (text.indexOf(' -> ') >= 0) {
+    text = text.replace(regexp7, ' -&gt; ');
+  }
+  if (text.indexOf(' ->> ') >= 0) {
+    text = text.replace(regexp8, ' -&gt;&gt; ');
+  }
+  if (text.indexOf(' #> ') >= 0) {
+    text = text.replace(regexp9, ' #&gt; ');
+  }
+  if (text.indexOf(' #>> ') >= 0) {
+    text = text.replace(regexp10, ' #&gt;&gt; ');
+  }
+  if (text.indexOf(' @> ') >= 0) {
+    text = text.replace(regexp11, ' @&gt; ');
+  }
+  if (text.indexOf(' >@ ') >= 0) {
+    text = text.replace(regexp12, ' &gt;@ ');
+  }
+  if (text.indexOf(' <@ ') >= 0) {
+    text = text.replace(regexp13, ' &lt;@ ');
+  }
+  if (text.indexOf(' @< ') >= 0) {
+    text = text.replace(regexp14, ' @&lt; ');
   }
   return text;
 }
@@ -39,20 +79,50 @@ export function trim(stream: string): string {
   if (text.indexOf(' < ') >= 0) {
     text = text.replace(regexp4, ' &lt; ');
   }
+  if (text.indexOf(' && ') >= 0) {
+    text = text.replace(regexp5, ' &amp;&amp; ');
+  }
+  if (text.indexOf(' ?& ') >= 0) {
+    text = text.replace(regexp6, ' ?&amp; ');
+  }
+  if (text.indexOf(' -> ') >= 0) {
+    text = text.replace(regexp7, ' -&gt; ');
+  }
+  if (text.indexOf(' ->> ') >= 0) {
+    text = text.replace(regexp8, ' -&gt;&gt; ');
+  }
+  if (text.indexOf(' #> ') >= 0) {
+    text = text.replace(regexp9, ' #&gt; ');
+  }
+  if (text.indexOf(' #>> ') >= 0) {
+    text = text.replace(regexp10, ' #&gt;&gt; ');
+  }
+  if (text.indexOf(' @> ') >= 0) {
+    text = text.replace(regexp11, ' @&gt; ');
+  }
+  if (text.indexOf(' >@ ') >= 0) {
+    text = text.replace(regexp12, ' &gt;@ ');
+  }
+  if (text.indexOf(' <@ ') >= 0) {
+    text = text.replace(regexp13, ' &lt;@ ');
+  }
+  if (text.indexOf(' @< ') >= 0) {
+    text = text.replace(regexp14, ' @&lt; ');
+  }
   if (text.indexOf('\r\n') >= 0) {
-    text = text.replace(regexp5, '');
+    text = text.replace(regexp30, '');
   }
   if (text.indexOf('\r') >= 0) {
-    text = text.replace(regexp6, '');
+    text = text.replace(regexp31, '');
   }
   if (text.indexOf('\n') >= 0) {
-    text = text.replace(regexp7, '');
+    text = text.replace(regexp32, '');
   }
   while (text.indexOf('    ') >= 0) {
-    text = text.replace(regexp8, ' ');
+    text = text.replace(regexp33, ' ');
   }
   while (text.indexOf('  ') >= 0) {
-    text = text.replace(regexp9, ' ');
+    text = text.replace(regexp34, ' ');
   }
   return text;
 }
@@ -62,11 +132,11 @@ export function buildTemplateFromNodes(nodes: NodeListOf<ChildNode>): Template {
   const l = nodes.length;
   for (let i = 0; i < l; i++) {
     const c = nodes[i];
-    const sub: TemplateNode = { type: '', text: '', property: '', value: '' };
     if (c.nodeType === 3) {
       if (c.nodeValue != null) {
-        sub.type = TemplateType.text;
-        sub.text = c.nodeValue;
+        const v = c.nodeValue;
+        const format = buildFormat(v);
+        const sub: TemplateNode = { type: TemplateType.text, text: v, property: '', value: '', format };
         templates.push(sub);
         text = text + sub.text;
       }
@@ -77,21 +147,25 @@ export function buildTemplateFromNodes(nodes: NodeListOf<ChildNode>): Template {
         if (test && test.length > 0) {
           const s2 = buildIf(test);
           if (s2) {
-            s2.text = getString(child.firstChild);
-            templates.push(s2);
+            const v = getString(child.firstChild);
+            const format = buildFormat(v);
+            const sub: TemplateNode = { type: s2.type, text: v, property: s2.property, value: s2.value, format };
+            templates.push(sub);
             text = text + child.toString();
           }
         }
       }
       if (isValidNode(child.nodeName)) {
-        sub.property = child.getAttribute('property');
-        sub.encode = child.getAttribute('encode');
-        sub.value = child.getAttribute('value');
-        if (!sub.value) {
-          sub.value = child.getAttribute('compareValue');
+        const property = child.getAttribute('property');
+        const encode = child.getAttribute('encode');
+        let value = child.getAttribute('value');
+        if (!value) {
+          value = child.getAttribute('compareValue');
         }
-        sub.type = child.nodeName;
-        sub.text = getString(child.firstChild);
+        const type = child.nodeName;
+        const subText = getString(child.firstChild);
+        const format = buildFormat(subText);
+        const sub: TemplateNode = {property, encode, value, text: subText, type, format};
         templates.push(sub);
         text = text + child.toString();
       }
@@ -99,16 +173,21 @@ export function buildTemplateFromNodes(nodes: NodeListOf<ChildNode>): Template {
   }
   return { text, templates };
 }
-export function buildIf(t: string): TemplateNode | undefined {
+export interface IfTemplateNode {
+  type: string;
+  property: string | null;
+  value: string | null;
+}
+export function buildIf(t: string): IfTemplateNode | undefined {
   let i = t.indexOf('!=');
   if (i > 0) {
     const s1 = t.substr(0, i).trim();
     const s2 = t.substr(i + 2).trim();
     if (s1.length > 0) {
       if (s2 === 'null') {
-        return { type: 'isNotNull', text: '', property: s1, value: 'null' };
+        return { type: 'isNotNull', property: s1, value: 'null' };
       } else {
-        return { type: 'isNotEqual', text: '', property: s1, value: trimQ(s2) };
+        return { type: 'isNotEqual', property: s1, value: trimQ(s2) };
       }
     }
   } else {
@@ -118,9 +197,9 @@ export function buildIf(t: string): TemplateNode | undefined {
       const s2 = t.substr(i + 2).trim();
       if (s1.length > 0) {
         if (s2 === 'null') {
-          return { type: 'isNull', text: '', property: s1, value: 'null' };
+          return { type: 'isNull', property: s1, value: 'null' };
         } else {
-          return { type: 'isEqual', text: '', property: s1, value: trimQ(s2) };
+          return { type: 'isEqual', property: s1, value: trimQ(s2) };
         }
       }
     }

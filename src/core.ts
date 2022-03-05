@@ -43,6 +43,7 @@ export interface TemplateNode {
   property: string | null;
   encode?: string | null;
   value: string | null;
+  format: StringFormat;
 }
 
 export function buildFormat(str: string): StringFormat {
@@ -169,7 +170,7 @@ export function mergeStringFormat(format: StringFormat, obj: any): string {
   }
   return results.join('');
 }
-export function merge(obj: any, format: StringFormat, param: (i: number) => string, j: number): TmpStatement {
+export function merge(obj: any, format: StringFormat, param: (i: number) => string, j: number, skipArray?: boolean): TmpStatement {
   const results: string[] = [];
   const texts = format.texts;
   const parameters = format.parameters;
@@ -183,7 +184,7 @@ export function merge(obj: any, format: StringFormat, param: (i: number) => stri
       if (parameters[i].type === ParameterType.text) {
         results.push(p);
       } else {
-        if (Array.isArray(p)) {
+        if (skipArray && Array.isArray(p)) {
           if (p.length > 0) {
             const sa: string[] = [];
             for (const sp of p) {
@@ -237,7 +238,7 @@ export function getText(str: string, templates: Map<string, Template>): string {
   return (!template ? '' : template.text);
 }
 // sql
-export function build(obj: any, template: Template, cacheFormats: Map<string, StringFormat>, param: (i: number) => string): Statement {
+export function build(obj: any, template: Template, cacheFormats: Map<string, StringFormat>, param: (i: number) => string, skipArray?: boolean): Statement {
   const results: string[] = [];
   const templateNodes: TemplateNode[] = template.templates;
   const renderNodes: TemplateNode[] = renderTemplateNodes(obj, templateNodes);
@@ -247,7 +248,7 @@ export function build(obj: any, template: Template, cacheFormats: Map<string, St
     const format: StringFormat = getStringFormat(sub.text, cacheFormats);
     let s: TmpStatement;
     if (sub.type === TemplateType.text) {
-      s = merge(obj, format, param, i);
+      s = merge(obj, format, param, i, skipArray);
       i = s.i;
       if (s && s.query && s.query.length > 0) {
         results.push(s.query);
@@ -258,7 +259,7 @@ export function build(obj: any, template: Template, cacheFormats: Map<string, St
         }
       }
     } else {
-      s = merge(obj, format, param, i);
+      s = merge(obj, format, param, i, skipArray);
       i = s.i;
       if (s && s.query && s.query.length > 0) {
         results.push(s.query);

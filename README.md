@@ -1,1 +1,1 @@
-# query-templates
+# query-mappers
