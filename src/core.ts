@@ -238,17 +238,17 @@ export function getText(str: string, templates: Map<string, Template>): string {
   return (!template ? '' : template.text);
 }
 // sql
-export function build(obj: any, template: Template, cacheFormats: Map<string, StringFormat>, param: (i: number) => string, skipArray?: boolean): Statement {
+export function build(obj: any, template: Template, param: (i: number) => string, skipArray?: boolean): Statement {
   const results: string[] = [];
   const templateNodes: TemplateNode[] = template.templates;
   const renderNodes: TemplateNode[] = renderTemplateNodes(obj, templateNodes);
   let i = 1;
   const params = [];
   for (const sub of renderNodes) {
-    const format: StringFormat = getStringFormat(sub.text, cacheFormats);
+    // const format: StringFormat = getStringFormat(sub.text, cacheFormats);
     let s: TmpStatement;
     if (sub.type === TemplateType.text) {
-      s = merge(obj, format, param, i, skipArray);
+      s = merge(obj, sub.format, param, i, skipArray);
       i = s.i;
       if (s && s.query && s.query.length > 0) {
         results.push(s.query);
@@ -259,7 +259,7 @@ export function build(obj: any, template: Template, cacheFormats: Map<string, St
         }
       }
     } else {
-      s = merge(obj, format, param, i, skipArray);
+      s = merge(obj, sub.format, param, i, skipArray);
       i = s.i;
       if (s && s.query && s.query.length > 0) {
         results.push(s.query);
@@ -274,17 +274,17 @@ export function build(obj: any, template: Template, cacheFormats: Map<string, St
   const query = results.join('');
   return { query, params };
 }
-export function mergeSqlByTemplate(obj: any, template: Template, cacheFormats: Map<string, StringFormat>): string {
+export function mergeSqlByTemplate(obj: any, template: Template): string {
   const results = [];
   const templateNodes: TemplateNode[] = template.templates;
   const renderNodes: TemplateNode[] = renderTemplateNodes(obj, templateNodes);
   for (const sub of renderNodes) {
-    const format: StringFormat = getStringFormat(sub.text, cacheFormats);
+    // const format: StringFormat = getStringFormat(sub.text, cacheFormats);
     let s: string;
     if (sub.type === TemplateType.text) {
-      s = mergeSqlStringFormat(format, obj);
+      s = mergeSqlStringFormat(sub.format, obj);
     } else {
-      s = ('false' === sub.encode ? mergeStringFormat(format, obj) : mergeSqlStringFormat(format, obj));
+      s = ('false' === sub.encode ? mergeStringFormat(sub.format, obj) : mergeSqlStringFormat(sub.format, obj));
     }
     if (s && s.length > 0) {
       results.push(s);
