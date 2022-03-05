@@ -184,15 +184,21 @@ export function merge(obj: any, format: StringFormat, param: (i: number) => stri
       if (parameters[i].type === ParameterType.text) {
         results.push(p);
       } else {
-        if (skipArray && Array.isArray(p)) {
+        if (Array.isArray(p)) {
           if (p.length > 0) {
-            const sa: string[] = [];
-            for (const sp of p) {
-              sa.push(param(k));
-              params.push(sp);
+            if (skipArray) {
+              results.push(param(k));
+              params.push(p);
               k = k + 1;
+            } else {
+              const sa: string[] = [];
+              for (const sp of p) {
+                sa.push(param(k));
+                params.push(sp);
+                k = k + 1;
+              }
+              results.push(sa.join(','));
             }
-            results.push(sa.join(','));
           }
         } else {
           results.push(param(k));
