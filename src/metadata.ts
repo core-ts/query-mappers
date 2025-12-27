@@ -1,7 +1,7 @@
 export interface StringMap {
   [key: string]: string;
 }
-export type MatchType = 'equal' | 'prefix' | 'contain' | 'max' | 'min'; // contain: default for string, min: default for Date, number
+export type Operator = "=" | "like" | "!=" | "<>" | ">" | ">=" | "<" | "<="
 
 export interface Model {
   name?: string;
@@ -14,7 +14,7 @@ export interface Model {
 }
 export interface Attribute {
   column?: string;
-  match?: MatchType;
+  operator?: Operator;
 }
 export interface Attributes {
   [key: string]: Attribute;

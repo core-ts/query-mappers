@@ -2,7 +2,7 @@ import { build, Statement, Template } from './core';
 import { Attribute, Attributes, StringMap } from './metadata';
 
 export type Build = (obj: any, template: Template, param: (i: number) => string) => Statement;
-export type Query = <S>(filter: S, bparam: LikeType | ((i: number) => string), sn?: string, buildSort?: (sort?: string, map?: Attributes | StringMap) => string, attrs?: Attributes) => Statement | undefined;
+export type Query = <S>(filter: S, param: (i: number) => string, sn?: string, buildSort?: (sort?: string, map?: Attributes | StringMap) => string, attrs?: Attributes) => Statement | undefined;
 export type BuildFilter = <S>(filter: S, q?: string, useContain?: boolean, attrs?: Attributes) => S;
 export function useQuery(id?: string, mapper?: Map<string, Template>, attrs?: Attributes, useContain?: boolean, q?: string, sort?: string): Query | undefined {
   if (id && mapper) {
@@ -31,19 +31,13 @@ export class QueryBuilder<S> {
   buildFilter: BuildFilter;
   sort: string;
   q: string;
-  buildQuery(filter: S, bparam: LikeType | ((i: number) => string), sn?: string, buildSort?: (sort?: string, map?: Attributes | StringMap) => string, attrs?: Attributes): Statement | undefined {
+  buildQuery(filter: S, param: (i: number) => string, sn?: string, buildSort?: (sort?: string, map?: Attributes | StringMap) => string, attrs?: Attributes): Statement | undefined {
     const f2 = this.buildFilter(filter, this.q, this.useContain, this.attributes ? this.attributes : attrs);
     if (sn && sn.length > 0 && buildSort) {
       const sort = buildSort(sn);
       (f2 as any)[this.sort] = sort;
     }
-    let param1: (i: number) => string;
-    if (typeof bparam === 'string') {
-      param1 = buildDollarParam;
-    } else {
-      param1 = bparam;
-    }
-    return build(f2, this.template, param1);
+    return build(f2, this.template, param);
   }
 }
 export function buildFilter<S>(filter: S, q?: string, useContain?: boolean, attrs?: Attributes): S {
@@ -66,12 +60,12 @@ export function buildFilter<S>(filter: S, q?: string, useContain?: boolean, attr
             if (attrs) {
               const attr: Attribute = attrs[key];
               if (attr) {
-                if (attr.match === 'prefix') {
-                  obj2[key] = v + '%';
-                } else if (attr.match === 'equal') {
+                if (attr.operator === '=') {
                   obj2[key] = v;
-                } else {
+                } else if (attr.operator === 'like') {
                   obj2[key] = '%' + v + '%';
+                } else  {
+                  obj2[key] = v + '%';
                 }
               } else {
                 obj2[key] = v;

@@ -1,6 +1,6 @@
 {
   "name": "query-mappers",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "description": "query-mappers",
   "main": "./lib/index.js",
   "types": "./src/index.ts",
