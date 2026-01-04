@@ -22,7 +22,7 @@ export function useQueryBuilder<S>(template: Template, attributes?: Attributes, 
   return new QueryBuilder<S>(template, useContain, undefined, attributes, q, sort);
 }
 export class QueryBuilder<S> {
-  constructor(public template: Template, public useContain?: boolean, bf?: BuildFilter, public attributes?: Attributes, q?: string, sort?: string) {
+  constructor(protected template: Template, protected useContain?: boolean, bf?: BuildFilter, protected attributes?: Attributes, q?: string, sort?: string) {
     this.sort = (sort ? sort : 'sort');
     this.q = (q ? q : 'q');
     this.buildFilter = bf ? bf : buildFilter;
@@ -34,7 +34,7 @@ export class QueryBuilder<S> {
   buildQuery(filter: S, param: (i: number) => string, sn?: string, buildSort?: (sort?: string, map?: Attributes | StringMap) => string, attrs?: Attributes): Statement | undefined {
     const f2 = this.buildFilter(filter, this.q, this.useContain, this.attributes ? this.attributes : attrs);
     if (sn && sn.length > 0 && buildSort) {
-      const sort = buildSort(sn);
+      const sort = buildSort(sn, attrs ? attrs : this.attributes);
       (f2 as any)[this.sort] = sort;
     }
     return build(f2, this.template, param);
@@ -46,7 +46,7 @@ export function buildFilter<S>(filter: S, q?: string, useContain?: boolean, attr
   const keys = Object.keys(s);
   for (const key of keys) {
     let v = s[key];
-    if (v !== undefined && v != null && v !== '') {
+    if (v != undefined && v !== '') {
       if (typeof v === 'string') {
         v = v.trim();
         if (v !== '') {
